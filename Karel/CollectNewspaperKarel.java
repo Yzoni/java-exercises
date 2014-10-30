@@ -1,6 +1,7 @@
 /*
  * File: CollectNewspaperKarel.java
  * Author: Y.J.I. De Boer
+ * 10786015
  * --------------------------------
  * Three new methods are used for picking up the paper from a specifified position
  * Which are move to the newspaper, pick up the newspaper and returning the newspaper

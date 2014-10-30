@@ -1,6 +1,7 @@
 /*
  * File: MazeSolvingKarel.java
  * Author: Y.J.I. De Boer
+ * 10786015
  * --------------------------
  *
  * The MazeSolvingKarel subclass is able to solve the first two mazes. To solve
@@ -28,6 +29,7 @@ public class MazeSolvingKarel extends SuperKarel
 			// Main maze solver
 			if (leftIsClear() && cornerColorIs(null)) {
 				if (frontIsClear()) {
+					// nescecarry for the exception rule in case of a juntion
 					paintCorner(RED);
 				}
 				turnLeft();

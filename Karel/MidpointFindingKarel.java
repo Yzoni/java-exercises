@@ -1,6 +1,7 @@
 /*
  * File: MidpointFindingKarel.java
  * Author: Y.J.I. De Boer
+ * 10786015
  * -------------------------------
  * The MidpointFindingKarel leaves a beeper on the corner closest to 
  * the center of 1st Street (or either of the two central corners if 1st Street 
@@ -15,7 +16,7 @@ import stanford.karel.*;
 public class MidpointFindingKarel extends SuperKarel
 {
 	public void run() {
-		//Setup initial situation
+		// Setup initial situation
 		putBeeper();
 		while (frontIsClear()) { 
 			move();
@@ -24,10 +25,10 @@ public class MidpointFindingKarel extends SuperKarel
 		turnAround();
 		move();
 
-		//Start algorithm
+		// Start algorithm
 		moveBetweenStones();
 		
-		//End standing on the beeper
+		// End standing on the beeper
 		turnAround();
 		move();
 	}

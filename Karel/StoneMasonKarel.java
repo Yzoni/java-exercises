@@ -1,6 +1,7 @@
 /*
  * File: StoneMasonKarel.java
  * Author: Y.J.I. De Boer
+ * 10786015
  * --------------------------
  * This solves the "repair the quad" problem. Pillars are always 4 columns appart. 
  * Begint with the most left pillar from bottom to top. After completing a pillar
@@ -16,11 +17,11 @@ public class StoneMasonKarel extends SuperKarel
 		while (frontIsClear()) {
 			turnLeft();
 			doPillar();
-			//Check the if there is a top stone if not place a stone
+			// Check the if there is a top stone if not place a stone
 			if (noBeepersPresent()) {
 				putBeeper();
 			}
-			//Go back down after finishing pillar
+			// Go back down after finishing pillar
 			turnAround();
 			while (frontIsClear()) {
 				move();
@@ -28,12 +29,12 @@ public class StoneMasonKarel extends SuperKarel
 			turnLeft();
 			moveToNextPillar();
 		}
-		//Build the last most right pillar
+		// Build the last most right pillar
 		turnLeft();
 		doPillar();
 	}
 
-//Make a whole pillar
+// Make a whole pillar
 	private void doPillar() {
 		while (frontIsClear()){
 			if (beepersPresent()) {
@@ -45,7 +46,7 @@ public class StoneMasonKarel extends SuperKarel
 		}
 	}
 
-//Method to move 4 columns to the next pillar
+// Method to move 4 columns to the next pillar
 	private void moveToNextPillar() {
 			move();
 			move();

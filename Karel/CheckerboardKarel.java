@@ -1,6 +1,7 @@
 /*
  * File: CheckerboardKarel.java
  * Author: Y.J.I. De Boer
+ * 10786015
  * ----------------------------
  * This class draws a checkerboard using beepers. Moving from the bottom row to the top row
  * doing row after row. 
@@ -11,11 +12,11 @@ import stanford.karel.*;
 public class CheckerboardKarel extends SuperKarel
 {
 	public void run() {
-		//exception in case world is only 1 high
+		// Exception in case world is only 1 high
 		if (leftIsBlocked() && rightIsBlocked()) {
 			doRow();
 		} else {
-
+		// In any other case:
 		// First draw the bottom line and move to the second line,
 		putBeeper();
 		doRow();
