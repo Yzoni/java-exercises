@@ -56,6 +56,9 @@ public class Breakout extends GraphicsProgram
 	/** Number of turns */
 	private static final int NTURNS = 3;
 
+	/** Number of turns */
+	private static final int SPEED = 15;
+
 	/** Runs the Breakout program. */
 	public void run()
 	{
@@ -76,7 +79,7 @@ public class Breakout extends GraphicsProgram
 			//Draw a layer of bricks
 			for (int j = 0; j <= NBRICKS_PER_ROW; j++) {
 				int x= (j - 1) * (BRICK_WIDTH + BRICK_SEP); 
-				GRect brick = new GRect(x, y, BRICK_WIDTH, BRICK_HEIGHT);
+				brick = new GRect(x, y, BRICK_WIDTH, BRICK_HEIGHT);
 				brick.setFilled(true);
 				if (i == 0 || i == 1) {
 					brick.setColor(Color.red);
@@ -118,24 +121,55 @@ public class Breakout extends GraphicsProgram
 
 	private void moveBall() {
 		vx = rgen.nextDouble(1.0, 3.0);
-		vy = rgen.nextDouble(1.0, 3.0);
 		if (rgen.nextBoolean(0.5))
     		vx = -vx;
-		if (ball.getX() == 0 || ball.getX() == WIDTH - BALL_RADIUS) {
-    			vx = -vx;
-		}
-		if (ball.getY() == 0 || ball.getY() == HEIGHT - BALL_RADIUS) {
-    			vy = -vy;
-    	}
+    	vy = 3.0;
 
-    	while (true) {
-			ball.move(vx, vy);
-			pause(10);
+    	// Keep moving the ball while the ball is inside de window
+		while (ball.getY() < HEIGHT) {
+    		ball.move(vx, vy);
+    		// When ball reaches left or right wall
+    		if ((ball.getX() - vx <= 0 && vx < 0 )|| (ball.getX() + vx >= (WIDTH - BALL_RADIUS*2) && vx>0)) {
+           		vx = -vx;
+        	}
+        	// When ball reaches the ceiling
+        	if (ball.getY() - vy <= 0 && vy < 0) {
+            	vy = -vy;
+       		}
+
+       		GObject collider = getCollidingObject();
+			// If paddle bounce back
+			if (collider == paddle) {
+				vy = -vy;
+			// If brick, break brick and bounce back 
+			} else if (collider != null) {
+				remove(collider);
+				vy = -vy;
+			}
+			pause(SPEED);
 		}
+	}
+
+	private GObject getCollidingObject() {
+		if((getElementAt(ball.getX(), ball.getY())) != null) {
+	         return getElementAt(ball.getX(), ball.getY());
+	      }
+		else if (getElementAt( (ball.getX() + BALL_RADIUS * 2), ball.getY()) != null ){
+	         return getElementAt(ball.getX() + BALL_RADIUS * 2, ball.getY());
+	      }
+		else if(getElementAt(ball.getX(), (ball.getY() + BALL_RADIUS * 2)) != null ){
+	         return getElementAt(ball.getX(), ball.getY() + BALL_RADIUS * 2);
+	      }
+		else if(getElementAt((ball.getX() + BALL_RADIUS * 2), (ball.getY() + BALL_RADIUS * 2)) != null ){
+	         return getElementAt(ball.getX() + BALL_RADIUS * 2, ball.getY() + BALL_RADIUS * 2);
+	    } else {
+	    	return null;
+	    }
 	}
 
 	private GRect paddle;
 	private GOval ball;
+	private GRect brick;
 
 	// Velocity of the ball
 	private double vx, vy;
