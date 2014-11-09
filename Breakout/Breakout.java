@@ -66,11 +66,13 @@ public class Breakout extends GraphicsProgram
 		setupPaddle();
 		addMouseListeners();
 
-		createBall();
+		for (int i = 0; i < NTURNS; i++) {
+			createBall();
+			setupBallCounter(3 - i);
+			waitForClick();
+			moveBall();
+		}
 
-		waitForClick();
-
-		moveBall();
 	}
 
 	private void setupBricks() {
@@ -79,7 +81,7 @@ public class Breakout extends GraphicsProgram
 			//Draw a layer of bricks
 			for (int j = 0; j <= NBRICKS_PER_ROW; j++) {
 				int x= (j - 1) * (BRICK_WIDTH + BRICK_SEP); 
-				brick = new GRect(x, y, BRICK_WIDTH, BRICK_HEIGHT);
+				GRect brick = new GRect(x, y, BRICK_WIDTH, BRICK_HEIGHT);
 				brick.setFilled(true);
 				if (i == 0 || i == 1) {
 					brick.setColor(Color.red);
@@ -105,6 +107,11 @@ public class Breakout extends GraphicsProgram
 		paddle.setColor(Color.black);
 		add(paddle);
 	} 
+
+	private void setupBallCounter(int amount) {
+		GLabel ballcounter = new GLabel("Balls left: " + amount, 10, 20);
+		add(ballcounter);
+	}
 
 	public void mouseMoved(MouseEvent e) {
 		if (e.getX() < (WIDTH - PADDLE_WIDTH)) {
@@ -169,7 +176,7 @@ public class Breakout extends GraphicsProgram
 
 	private GRect paddle;
 	private GOval ball;
-	
+
 	// Velocity of the ball
 	private double vx, vy;
 
