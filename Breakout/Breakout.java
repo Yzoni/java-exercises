@@ -41,7 +41,7 @@ public class Breakout extends GraphicsProgram
 	private static final int BRICK_SEP = 4;
 
 	/** Width of a brick */
-	private static final int BRICK_WIDTH =
+	private static final int BRICK_WIDfTH =
 		(WIDTH - (NBRICKS_PER_ROW - 1) * BRICK_SEP) / NBRICKS_PER_ROW;
 
 	/** Height of a brick */
@@ -57,23 +57,62 @@ public class Breakout extends GraphicsProgram
 	private static final int NTURNS = 3;
 
 	/** Number of turns */
-	private static final int SPEED = 15;
+	private static final int SPEED = 10;
 
 	/** Runs the Breakout program. */
-	public void run()
-	{
+	public void run() {
+		setupGame();
+		playGame();
+	}
+
+	/* Create board */
+	private void setupGame() {
+		setBackground(Color.black);
 		setupBricks();
 		setupPaddle();
 		addMouseListeners();
+	}
 
+	/* Play game */
+	private void playGame() {
 		for (int i = 0; i < NTURNS; i++) {
 			createBall();
-			setupBallCounter(3 - i);
 			waitForClick();
-			moveBall();
+			vx = rgen.nextDouble(1.0, 3.0);
+			if (rgen.nextBoolean(0.5)) {
+    			vx = -vx;
+    		}
+    		vy = 3.0;
+			// Keep moving the ball while the ball is inside de window
+			while (ball.getY() < HEIGHT + 10) {
+				moveBall();
+				bounceWall();
+       			collider = getCollidingObject();
+				bouncePaddle();
+				bounceBrick();
+				if (powerup != null) {
+					movePowerup();
+				}
+				if (brickcounter == 1) {
+					break;
+				}
+				pause(SPEED);
+			}
+			if (brickcounter == 1) {
+				setWin();
+				break;
+			}
 		}
-
+		if (brickcounter > 1) {
+			setFail();
+		}
+		waitForClick();
+		playGame();
 	}
+
+	/*
+	 * SETUP METHODS
+	 */
 
 	private void setupBricks() {
 		for (int i = 0; i < NBRICK_ROWS; i++) {
@@ -81,7 +120,7 @@ public class Breakout extends GraphicsProgram
 			//Draw a layer of bricks
 			for (int j = 0; j <= NBRICKS_PER_ROW; j++) {
 				int x= (j - 1) * (BRICK_WIDTH + BRICK_SEP); 
-				GRect brick = new GRect(x, y, BRICK_WIDTH, BRICK_HEIGHT);
+				brick = new Brick(x, y, BRICK_WIDTH, BRICK_HEIGHT);
 				brick.setFilled(true);
 				if (i == 0 || i == 1) {
 					brick.setColor(Color.red);
@@ -91,10 +130,11 @@ public class Breakout extends GraphicsProgram
 					brick.setColor(Color.yellow);
 				} else if (i == 6 || i == 7) {
 					brick.setColor(Color.green);
-				} else if (i == 8 || i == 9) {
+				} else {
 					brick.setColor(Color.cyan);
 				}
 				add(brick);
+				brickcounter += 1;
 			}
 		}
 	}
@@ -104,59 +144,90 @@ public class Breakout extends GraphicsProgram
 		int y = HEIGHT - (PADDLE_HEIGHT + PADDLE_Y_OFFSET);
 		paddle = new GRect(x, y, PADDLE_WIDTH, PADDLE_HEIGHT);
 		paddle.setFilled(true);
-		paddle.setColor(Color.black);
+		paddle.setColor(Color.white);
 		add(paddle);
 	} 
 
-	private void setupBallCounter(int amount) {
-		GLabel ballcounter = new GLabel("Balls left: " + amount, 10, 20);
+	private void setupBallCounter(int countballs) {
+		GLabel ballcounter = new GLabel("Balls left: " + countballs, 10, 20);
 		add(ballcounter);
 	}
 
+
+	/*
+	 * PLAY METHODS
+	 */
+
+	/* CREATE */
+
+	private void createBall() {
+		ball = new GOval((WIDTH - BALL_RADIUS) /2, (HEIGHT - BALL_RADIUS)/ 2, BALL_RADIUS, BALL_RADIUS);
+		ball.setFilled(true);
+		ball.setColor(Color.white);
+		add(ball);
+	}
+
+	public void createPowerup(double x, double y) {
+		powerup = new Powerup(x, y, 15, 15);
+		powerup.setFilled(true);
+		powerup.setColor(Color.white);
+		add(powerup);
+	}	
+
+
+	/* MOVE */
+
+	// Move paddle on mouse move
 	public void mouseMoved(MouseEvent e) {
 		if (e.getX() < (WIDTH - PADDLE_WIDTH)) {
 			paddle.move(e.getX() - paddle.getX(), 0);
 		}
 	}
 
-	private void createBall() {
-		ball = new GOval((WIDTH - BALL_RADIUS) /2, (HEIGHT - BALL_RADIUS)/ 2, BALL_RADIUS, BALL_RADIUS);
-		ball.setFilled(true);
-		ball.setColor(Color.black);
-		add(ball);
+	// Move ball
+	private void moveBall() {
+    	ball.move(vx, vy);
 	}
 
-	private void moveBall() {
-		vx = rgen.nextDouble(1.0, 3.0);
-		if (rgen.nextBoolean(0.5))
-    		vx = -vx;
-    	vy = 3.0;
+	// Move powerup
+	private void movePowerup() {
+		powerup.move(0, 1);
+	}
 
-    	// Keep moving the ball while the ball is inside de window
-		while (ball.getY() < HEIGHT) {
-    		ball.move(vx, vy);
-    		// When ball reaches left or right wall
-    		if ((ball.getX() - vx <= 0 && vx < 0 )|| (ball.getX() + vx >= (WIDTH - BALL_RADIUS*2) && vx>0)) {
-           		vx = -vx;
-        	}
-        	// When ball reaches the ceiling
-        	if (ball.getY() - vy <= 0 && vy < 0) {
-            	vy = -vy;
-       		}
 
-       		GObject collider = getCollidingObject();
-			// If paddle bounce back
-			if (collider == paddle) {
-				vy = -vy;
-			// If brick, break brick and bounce back 
-			} else if (collider != null) {
-				remove(collider);
-				vy = -vy;
-			}
-			pause(SPEED);
+	/* COLISSION */
+
+	// Bounce back from wall
+	private void bounceWall() {
+		// When ball reaches left or right wall
+    	if ((ball.getX() - vx <= 0 && vx < 0 )|| (ball.getX() + vx >= (WIDTH - BALL_RADIUS*2) && vx>0)) {
+          	vx = -vx;
+        }
+        // When ball reaches the ceiling
+        if (ball.getY() - vy <= 0 && vy < 0) {
+            vy = -vy;
+       	}
+	}
+
+	// Bounce off the paddle
+	private void bouncePaddle() {
+		// If paddle bounce back
+		if (collider == paddle) {
+			vy = -vy;
+		}	
+	}
+
+	// Bounce back when hitting a brick
+	private void bounceBrick() {
+		if (collider instanceof Brick) {
+			remove(collider);
+			brickcounter -= 1;
+			vy = -vy;
+			createPowerup(collider.getX(), collider.getY());
 		}
 	}
 
+	// Get the object where the object is bouncing from
 	private GObject getCollidingObject() {
 		if((getElementAt(ball.getX(), ball.getY())) != null) {
 	         return getElementAt(ball.getX(), ball.getY());
@@ -174,8 +245,31 @@ public class Breakout extends GraphicsProgram
 	    }
 	}
 
+
+	/* MESSAGES */
+
+	// Display win message
+	private void setWin() {
+		GLabel win = new GLabel("YOU MADE IT!", WIDTH / 2, HEIGHT / 2);
+		win.setColor(Color.white);
+		add(win);
+	}
+
+	// Display fail message
+	private void setFail() {
+		GLabel fail = new GLabel("TOO BAD...", WIDTH / 2, HEIGHT / 2);
+		fail.setColor(Color.white);
+		add(fail);
+	}
+
+	private int countballs;
 	private GRect paddle;
 	private GOval ball;
+	private Powerup powerup;
+	private Brick brick;
+
+	private GObject collider;
+	private int brickcounter;
 
 	// Velocity of the ball
 	private double vx, vy;
@@ -183,3 +277,4 @@ public class Breakout extends GraphicsProgram
 	// Random number generator
 	private RandomGenerator rgen = RandomGenerator.getInstance();
  }
+
