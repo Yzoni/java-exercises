@@ -33,7 +33,7 @@ public class Breakout extends GraphicsProgram {
 	private static final int NBRICKS_PER_ROW = 2;
 
 	/** Number of rows of bricks */
-	private static final int NBRICK_ROWS = 1;
+	private static final int NBRICK_ROWS = 2;
 
 	/** Separation between bricks */
 	private static final int BRICK_SEP = 4;
@@ -54,8 +54,8 @@ public class Breakout extends GraphicsProgram {
 	/** Number of turns */
 	private static final int NTURNS = 3;
 
-	/** Number of turns */
-	private static final int SPEED = 10;
+	/** Initial game speed */
+	private static final double INITIALGAMESPEED = 10;
 
 	/** Runs the Breakout program. */
 	public void run() {
@@ -73,6 +73,7 @@ public class Breakout extends GraphicsProgram {
 		addMouseListeners();
 		setupXVelocity();
 		setupYVelocity();
+		setupGameSpeed();
 	}
 
 	/* Play game */
@@ -92,12 +93,13 @@ public class Breakout extends GraphicsProgram {
 				collider = getCollidingObject();
 				bouncePaddle();
 				bounceBrick();
+				changeGameSpeed();
 				// If all bricks are broken stop moving the ball
 				if (brickcount.getValue() == 0) {
 					break;
 				}
 				// Speed of the game
-				pause(SPEED);
+				pause(speed);
 			}
 			// If all bricks are broken, display win message 
 			if (brickcount.getValue() == 0) {
@@ -135,6 +137,10 @@ public class Breakout extends GraphicsProgram {
 	private double setupYVelocity() {
 		vy = 3.0;
 		return (vy);
+	}
+
+	private void setupGameSpeed() {
+		speed = INITIALGAMESPEED; 
 	}
 
 	// Draw lines of bricks
@@ -205,6 +211,14 @@ public class Breakout extends GraphicsProgram {
 	// Move ball
 	private void moveBall() {
 		ball.move(vx, vy);
+	}
+
+	private void changeGameSpeed() {
+		if (brickcount.getValue() <= (NBRICK_ROWS * NBRICKS_PER_ROW) / 2) {
+			speed = INITIALGAMESPEED * 0.7;
+		} else if (brickcount.getValue() < (NBRICK_ROWS * NBRICKS_PER_ROW) / 3) {
+			speed = INITIALGAMESPEED * 0.5;
+		}
 	}
 
 
@@ -280,7 +294,7 @@ public class Breakout extends GraphicsProgram {
 		win = new GCompound();
 		GImage background = new GImage("images/win.gif");
 		background.setSize(WIDTH, HEIGHT);
-		GLabel wintext = new GLabel("Click to play again!");
+		GLabel wintext = new GLabel("YOU WON! Click to play again!");
 		wintext.setLocation(30, 30);
 		wintext.setColor(Color.white);
 		wintext.setFont("Arial-bold-20");
@@ -294,7 +308,7 @@ public class Breakout extends GraphicsProgram {
 		fail = new GCompound();
 		GImage background = new GImage("images/fail.gif");
 		background.setSize(WIDTH,HEIGHT);
-		GLabel failtext = new GLabel("Click to try again...");
+		GLabel failtext = new GLabel("YOU FAILED! Click to try again...");
 		failtext.setLocation(30, 30);
 		failtext.setColor(Color.white);
 		failtext.setFont("Arial-bold-20");
@@ -332,6 +346,7 @@ public class Breakout extends GraphicsProgram {
 	// Counters
 	private Subtractor brickcount;
 	private Subtractor ballcount;
+	private double speed;
 
 	// Score labels
 	private GLabel brickcounterlabel;
