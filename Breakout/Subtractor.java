@@ -1,6 +1,9 @@
 /*
  * File: Subtractor.java
  * -------------------
+ * Name: Y. de Boer
+ *
+ * This class subtracts 1 from an integer
  */
 
 public class Subtractor {

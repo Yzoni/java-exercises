@@ -1,10 +1,9 @@
 /*
  * File: Breakout.java
  * -------------------
- * Name:
- * Section Leader:
+ * Name: Y. de Boer
  * 
- * This file will eventually implement the game of Breakout.
+ * This file is the implements the game Breakout
  */
 
 import acm.graphics.*;
@@ -14,8 +13,7 @@ import java.applet.*;
 import java.awt.*;
 import java.awt.event.*;
 
-public class Breakout extends GraphicsProgram
-{
+public class Breakout extends GraphicsProgram {
 	/** Width and height of application window in pixels */
 	public static final int APPLICATION_WIDTH = 400;
 	public static final int APPLICATION_HEIGHT = 600;
@@ -73,45 +71,51 @@ public class Breakout extends GraphicsProgram
 		setupBricks();
 		setupPaddle();
 		addMouseListeners();
+		setupXVelocity();
+		setupYVelocity();
 	}
 
 	/* Play game */
 	private void playGame() {
+		// Incase of restart clear all messages
 		clearEndMessages();
+		// Loop  for amount of turns
 		for (int i = 0; i < NTURNS; i++) {
 			createBall();
 			waitForClick();
-			vx = rgen.nextDouble(1.0, 3.0);
-			if (rgen.nextBoolean(0.5)) {
-    			vx = -vx;
-    		}
-    		vy = 3.0;
-			// Keep moving the ball while the ball is inside de window
+			// Keep the ball moving while the ball is inside de window
 			while (ball.getY() < HEIGHT + 10) {
 				refreshCounterLabels();
 				moveBall();
 				bounceWall();
-       			collider = getCollidingObject();
+				// Get object name of colliding object
+				collider = getCollidingObject();
 				bouncePaddle();
 				bounceBrick();
+				// If all bricks are broken stop moving the ball
 				if (brickcount.getValue() == 0) {
 					break;
 				}
+				// Speed of the game
 				pause(SPEED);
 			}
+			// If all bricks are broken, display win message 
 			if (brickcount.getValue() == 0) {
 				removeAll();
 				setWin();
 				break;
 			}
+			// Decrease amount of reserve balls if ball got under paddle
 			ballcount.nextValue();
 			refreshCounterLabels();
 		}
+		// If all reserve balls are used, and another ball is need display lose message
 		if (ballcount.getValue() == 0) {
 			removeAll();
 			setFail();
 		}	
 		waitForClick();
+		// Make the board empty
 		removeAll();
 		run();
 	}
@@ -120,6 +124,20 @@ public class Breakout extends GraphicsProgram
 	 * SETUP METHODS
 	 */
 
+	private double setupXVelocity() {
+		vx = rgen.nextDouble(1.0, 3.0);
+		if (rgen.nextBoolean(0.5)) {
+			vx = -vx;
+		}
+		return (vx);
+	}
+
+	private double setupYVelocity() {
+		vy = 3.0;
+		return (vy);
+	}
+
+	// Draw lines of bricks
 	private void setupBricks() {
 		for (int i = 0; i < NBRICK_ROWS; i++) {
 			int y = BRICK_Y_OFFSET + (BRICK_HEIGHT + BRICK_SEP) * i;
@@ -144,14 +162,17 @@ public class Breakout extends GraphicsProgram
 		}
 	}
 
+	// Create a brick counter
 	private void setupBrickCounter() {
 		brickcount = new Subtractor(NBRICK_ROWS * NBRICKS_PER_ROW);
 	}
 
+	// Create a ball counter
 	private void setupBallCounter() {
 		ballcount = new Subtractor(NTURNS);
 	}
 
+	// Draw the paddle
 	private void setupPaddle() {
 		int x = 0;
 		int y = HEIGHT - (PADDLE_HEIGHT + PADDLE_Y_OFFSET);
@@ -166,17 +187,13 @@ public class Breakout extends GraphicsProgram
 	 * PLAY METHODS
 	 */
 
-	/* CREATE */
-
+	// Draw a new ball
 	private void createBall() {
 		ball = new GOval((WIDTH - BALL_RADIUS) /2, (HEIGHT - BALL_RADIUS)/ 2, BALL_RADIUS, BALL_RADIUS);
 		ball.setFilled(true);
 		ball.setColor(Color.white);
 		add(ball);
 	}
-
-
-	/* MOVE */
 
 	// Move paddle on mouse move
 	public void mouseMoved(MouseEvent e) {
@@ -187,7 +204,7 @@ public class Breakout extends GraphicsProgram
 
 	// Move ball
 	private void moveBall() {
-    	ball.move(vx, vy);
+		ball.move(vx, vy);
 	}
 
 
@@ -196,13 +213,13 @@ public class Breakout extends GraphicsProgram
 	// Bounce back from wall
 	private void bounceWall() {
 		// When ball reaches left or right wall
-    	if ((ball.getX() - vx <= 0 && vx < 0 )|| (ball.getX() + vx >= (WIDTH - BALL_RADIUS*2) && vx>0)) {
-          	vx = -vx;
-        }
-        // When ball reaches the ceiling
-        if (ball.getY() - vy <= 0 && vy < 0) {
-            vy = -vy;
-       	}
+		if ((ball.getX() - vx <= 0 && vx < 0 )|| (ball.getX() + vx >= (WIDTH - BALL_RADIUS*2) && vx>0)) {
+			vx = -vx;
+		}
+		// When ball reaches the ceiling
+		if (ball.getY() - vy <= 0 && vy < 0) {
+			vy = -vy;
+		}
 	}
 
 	// Bounce off the paddle
@@ -226,55 +243,67 @@ public class Breakout extends GraphicsProgram
 	// Get the object where the object is bouncing from
 	private GObject getCollidingObject() {
 		if((getElementAt(ball.getX(), ball.getY())) != null) {
-	         return getElementAt(ball.getX(), ball.getY());
-	      }
+			return getElementAt(ball.getX(), ball.getY());
+		}
 		else if (getElementAt( (ball.getX() + BALL_RADIUS * 2), ball.getY()) != null ){
-	         return getElementAt(ball.getX() + BALL_RADIUS * 2, ball.getY());
-	      }
+			return getElementAt(ball.getX() + BALL_RADIUS * 2, ball.getY());
+		}
 		else if(getElementAt(ball.getX(), (ball.getY() + BALL_RADIUS * 2)) != null ){
-	         return getElementAt(ball.getX(), ball.getY() + BALL_RADIUS * 2);
-	      }
+			return getElementAt(ball.getX(), ball.getY() + BALL_RADIUS * 2);
+		}
 		else if(getElementAt((ball.getX() + BALL_RADIUS * 2), (ball.getY() + BALL_RADIUS * 2)) != null ){
-	         return getElementAt(ball.getX() + BALL_RADIUS * 2, ball.getY() + BALL_RADIUS * 2);
-	    } else {
-	    	return null;
-	    }
+			return getElementAt(ball.getX() + BALL_RADIUS * 2, ball.getY() + BALL_RADIUS * 2);
+		} else {
+			return null;
+		}
 	}
 
 
 	/* MESSAGES */
 
+	// Draw the ball counter label
 	private void setBallCounterLabel(int countballs) {
 		ballcounterlabel = new GLabel("Balls left: " +  ballcount.getValue(), 10, 20);
 		ballcounterlabel.setColor(Color.white);
 		add(ballcounterlabel);
 	}
 
+	// Draw the brick counter label
 	private void setBrickCounterLabel(int countballs) {
 		brickcounterlabel = new GLabel("Bricks left: " + brickcount.getValue(), WIDTH / 2, 20);
 		brickcounterlabel.setColor(Color.white);
 		add(brickcounterlabel);
 	}	
 
-	// Display win message
+	// Draw win message
 	private void setWin() {
-		win = new GLabel("YOU MADE IT! Click to play again.", WIDTH / 2, HEIGHT / 2);
-		win.setColor(Color.white);
+		win = new GCompound();
+		GImage background = new GImage("images/win.gif");
+		background.setSize(WIDTH, HEIGHT);
+		GLabel wintext = new GLabel("Click to play again!");
+		wintext.setLocation(30, 30);
+		wintext.setColor(Color.white);
+		wintext.setFont("Arial-bold-20");
+		win.add(background);
+		win.add(wintext);
 		add(win);
 	}
 
-	// Display fail message
+	// Draw fail message
 	private void setFail() {
 		fail = new GCompound();
-		GImage background = new GImage("images/fail.jpg");
+		GImage background = new GImage("images/fail.gif");
 		background.setSize(WIDTH,HEIGHT);
-		GLabel failtext = new GLabel("Click to try again", WIDTH / 2, (HEIGHT / 3) * 2);
+		GLabel failtext = new GLabel("Click to try again...");
+		failtext.setLocation(30, 30);
 		failtext.setColor(Color.white);
+		failtext.setFont("Arial-bold-20");
 		fail.add(background);
 		fail.add(failtext);
 		add(fail);
 	}
 
+	// Remove fail or win message
 	private void clearEndMessages(){
 		if(fail!=null)
 			remove(fail);
@@ -282,6 +311,7 @@ public class Breakout extends GraphicsProgram
 			remove(win);
 	}
 
+	// Update and draw the couter labels
 	private void refreshCounterLabels() {
 		if (ballcounterlabel != null && brickcounterlabel != null) {
 			remove(ballcounterlabel);
@@ -293,20 +323,22 @@ public class Breakout extends GraphicsProgram
 
 	AudioClip bounce = MediaTools.loadAudioClip("sounds/bounce.au");
 
-
+	// Board objects
 	private GRect paddle;
 	private GOval ball;
 	private Brick brick;
-
 	private GObject collider;
 
+	// Counters
 	private Subtractor brickcount;
 	private Subtractor ballcount;
+
+	// Score labels
 	private GLabel brickcounterlabel;
 	private GLabel ballcounterlabel;
 	
-
-	private GLabel win;
+	// End messages
+	private GCompound win;
 	private GCompound fail;
 
 	// Velocity of the ball
@@ -314,5 +346,5 @@ public class Breakout extends GraphicsProgram
 
 	// Random number generator
 	private RandomGenerator rgen = RandomGenerator.getInstance();
- }
+}
 

@@ -1,18 +1,13 @@
 /*
  * File: Brick.java
  * -------------------
- * Name:
- * Section Leader:
+ * Name: Y. de Boer
  * 
- * This file will eventually implement the game of Breakout.
+ * Class to create a new brick object. Needed so instanceof can be used on 
+ * a Brick object in Breakout.java.
  */
 
 import acm.graphics.*;
-import acm.program.*;
-import acm.util.*;
-import java.applet.*;
-import java.awt.*;
-import java.awt.event.*;
 
 public class Brick extends GRect {
 	public Brick(int x, int y, int xsize, int ysize) {
