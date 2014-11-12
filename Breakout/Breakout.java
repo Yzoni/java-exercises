@@ -32,10 +32,10 @@ public class Breakout extends GraphicsProgram
 	private static final int PADDLE_Y_OFFSET = 30;
 
 	/** Number of bricks per row */
-	private static final int NBRICKS_PER_ROW = 10;
+	private static final int NBRICKS_PER_ROW = 2;
 
 	/** Number of rows of bricks */
-	private static final int NBRICK_ROWS = 10;
+	private static final int NBRICK_ROWS = 1;
 
 	/** Separation between bricks */
 	private static final int BRICK_SEP = 4;
@@ -68,6 +68,8 @@ public class Breakout extends GraphicsProgram
 	/* Create board */
 	private void setupGame() {
 		setBackground(Color.black);
+		setupBrickCounter();
+		setupBallCounter();
 		setupBricks();
 		setupPaddle();
 		addMouseListeners();
@@ -75,6 +77,7 @@ public class Breakout extends GraphicsProgram
 
 	/* Play game */
 	private void playGame() {
+		clearEndMessages();
 		for (int i = 0; i < NTURNS; i++) {
 			createBall();
 			waitForClick();
@@ -85,29 +88,32 @@ public class Breakout extends GraphicsProgram
     		vy = 3.0;
 			// Keep moving the ball while the ball is inside de window
 			while (ball.getY() < HEIGHT + 10) {
+				refreshCounterLabels();
 				moveBall();
 				bounceWall();
        			collider = getCollidingObject();
 				bouncePaddle();
 				bounceBrick();
-				if (powerup != null) {
-					movePowerup();
-				}
-				if (brickcounter == 1) {
+				if (brickcount.getValue() == 0) {
 					break;
 				}
 				pause(SPEED);
 			}
-			if (brickcounter == 1) {
+			if (brickcount.getValue() == 0) {
+				removeAll();
 				setWin();
 				break;
 			}
+			ballcount.nextValue();
+			refreshCounterLabels();
 		}
-		if (brickcounter > 1) {
+		if (ballcount.getValue() == 0) {
+			removeAll();
 			setFail();
-		}
+		}	
 		waitForClick();
-		playGame();
+		removeAll();
+		run();
 	}
 
 	/*
@@ -134,9 +140,16 @@ public class Breakout extends GraphicsProgram
 					brick.setColor(Color.cyan);
 				}
 				add(brick);
-				brickcounter += 1;
 			}
 		}
+	}
+
+	private void setupBrickCounter() {
+		brickcount = new Subtractor(NBRICK_ROWS * NBRICKS_PER_ROW);
+	}
+
+	private void setupBallCounter() {
+		ballcount = new Subtractor(NTURNS);
 	}
 
 	private void setupPaddle() {
@@ -146,11 +159,6 @@ public class Breakout extends GraphicsProgram
 		paddle.setFilled(true);
 		paddle.setColor(Color.white);
 		add(paddle);
-	} 
-
-	private void setupBallCounter(int countballs) {
-		GLabel ballcounter = new GLabel("Balls left: " + countballs, 10, 20);
-		add(ballcounter);
 	}
 
 
@@ -167,13 +175,6 @@ public class Breakout extends GraphicsProgram
 		add(ball);
 	}
 
-	public void createPowerup(double x, double y) {
-		powerup = new Powerup(x, y, 15, 15);
-		powerup.setFilled(true);
-		powerup.setColor(Color.white);
-		add(powerup);
-	}	
-
 
 	/* MOVE */
 
@@ -187,11 +188,6 @@ public class Breakout extends GraphicsProgram
 	// Move ball
 	private void moveBall() {
     	ball.move(vx, vy);
-	}
-
-	// Move powerup
-	private void movePowerup() {
-		powerup.move(0, 1);
 	}
 
 
@@ -221,9 +217,9 @@ public class Breakout extends GraphicsProgram
 	private void bounceBrick() {
 		if (collider instanceof Brick) {
 			remove(collider);
-			brickcounter -= 1;
+			bounce.play();
+			brickcount.nextValue();
 			vy = -vy;
-			createPowerup(collider.getX(), collider.getY());
 		}
 	}
 
@@ -248,28 +244,70 @@ public class Breakout extends GraphicsProgram
 
 	/* MESSAGES */
 
+	private void setBallCounterLabel(int countballs) {
+		ballcounterlabel = new GLabel("Balls left: " +  ballcount.getValue(), 10, 20);
+		ballcounterlabel.setColor(Color.white);
+		add(ballcounterlabel);
+	}
+
+	private void setBrickCounterLabel(int countballs) {
+		brickcounterlabel = new GLabel("Bricks left: " + brickcount.getValue(), WIDTH / 2, 20);
+		brickcounterlabel.setColor(Color.white);
+		add(brickcounterlabel);
+	}	
+
 	// Display win message
 	private void setWin() {
-		GLabel win = new GLabel("YOU MADE IT!", WIDTH / 2, HEIGHT / 2);
+		win = new GLabel("YOU MADE IT! Click to play again.", WIDTH / 2, HEIGHT / 2);
 		win.setColor(Color.white);
 		add(win);
 	}
 
 	// Display fail message
 	private void setFail() {
-		GLabel fail = new GLabel("TOO BAD...", WIDTH / 2, HEIGHT / 2);
-		fail.setColor(Color.white);
+		fail = new GCompound();
+		GImage background = new GImage("images/fail.jpg");
+		background.setSize(WIDTH,HEIGHT);
+		GLabel failtext = new GLabel("Click to try again", WIDTH / 2, (HEIGHT / 3) * 2);
+		failtext.setColor(Color.white);
+		fail.add(background);
+		fail.add(failtext);
 		add(fail);
 	}
 
-	private int countballs;
+	private void clearEndMessages(){
+		if(fail!=null)
+			remove(fail);
+		if(win!=null)
+			remove(win);
+	}
+
+	private void refreshCounterLabels() {
+		if (ballcounterlabel != null && brickcounterlabel != null) {
+			remove(ballcounterlabel);
+			remove(brickcounterlabel);
+		}
+		setBallCounterLabel(ballcount.getValue());
+		setBrickCounterLabel(brickcount.getValue());
+	}
+
+	AudioClip bounce = MediaTools.loadAudioClip("sounds/bounce.au");
+
+
 	private GRect paddle;
 	private GOval ball;
-	private Powerup powerup;
 	private Brick brick;
 
 	private GObject collider;
-	private int brickcounter;
+
+	private Subtractor brickcount;
+	private Subtractor ballcount;
+	private GLabel brickcounterlabel;
+	private GLabel ballcounterlabel;
+	
+
+	private GLabel win;
+	private GCompound fail;
 
 	// Velocity of the ball
 	private double vx, vy;
