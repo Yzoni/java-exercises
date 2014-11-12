@@ -1,9 +1,9 @@
 /*
  * File: Breakout.java
  * -------------------
- * Name: Y. de Boer
+ * Name: Y. de Boer 10786015
  * 
- * This file is the implements the game Breakout
+ * This file implements the game Breakout
  */
 
 import acm.graphics.*;

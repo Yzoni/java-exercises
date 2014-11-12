@@ -1,7 +1,7 @@
 /*
  * File: Subtractor.java
  * -------------------
- * Name: Y. de Boer
+ * Name: Y. de Boer 10786015
  *
  * This class subtracts 1 from an integer
  */

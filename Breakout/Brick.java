@@ -1,9 +1,9 @@
 /*
  * File: Brick.java
  * -------------------
- * Name: Y. de Boer
+ * Name: Y. de Boer 10786015
  * 
- * Class to create a new brick object. Needed so instanceof can be used on 
+ * This class creates a new brick object. Needed so instanceof can be used on 
  * a Brick object in Breakout.java.
  */
 
