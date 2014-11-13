@@ -30,10 +30,10 @@ public class Breakout extends GraphicsProgram {
 	private static final int PADDLE_Y_OFFSET = 30;
 
 	/** Number of bricks per row */
-	private static final int NBRICKS_PER_ROW = 2;
+	private static final int NBRICKS_PER_ROW = 10;
 
 	/** Number of rows of bricks */
-	private static final int NBRICK_ROWS = 2;
+	private static final int NBRICK_ROWS = 10;
 
 	/** Separation between bricks */
 	private static final int BRICK_SEP = 4;
@@ -195,7 +195,7 @@ public class Breakout extends GraphicsProgram {
 
 	// Draw a new ball
 	private void createBall() {
-		ball = new GOval((WIDTH - BALL_RADIUS) /2, (HEIGHT - BALL_RADIUS)/ 2, BALL_RADIUS, BALL_RADIUS);
+		ball = new GOval((WIDTH - BALL_RADIUS) /2, (HEIGHT - BALL_RADIUS)/ 2, BALL_RADIUS * 2, BALL_RADIUS * 2);
 		ball.setFilled(true);
 		ball.setColor(Color.white);
 		add(ball);
@@ -256,17 +256,18 @@ public class Breakout extends GraphicsProgram {
 
 	// Get the object where the object is bouncing from
 	private GObject getCollidingObject() {
-		if((getElementAt(ball.getX(), ball.getY())) != null) {
-			return getElementAt(ball.getX(), ball.getY());
-		}
-		else if (getElementAt( (ball.getX() + BALL_RADIUS * 2), ball.getY()) != null ){
-			return getElementAt(ball.getX() + BALL_RADIUS * 2, ball.getY());
-		}
-		else if(getElementAt(ball.getX(), (ball.getY() + BALL_RADIUS * 2)) != null ){
-			return getElementAt(ball.getX(), ball.getY() + BALL_RADIUS * 2);
-		}
-		else if(getElementAt((ball.getX() + BALL_RADIUS * 2), (ball.getY() + BALL_RADIUS * 2)) != null ){
-			return getElementAt(ball.getX() + BALL_RADIUS * 2, ball.getY() + BALL_RADIUS * 2);
+		GObject luc = getElementAt(ball.getX(), ball.getY());
+		GObject ruc = getElementAt((ball.getX() + BALL_RADIUS * 2), ball.getY());
+		GObject llc = getElementAt(ball.getX(), (ball.getY() + BALL_RADIUS * 2));
+		GObject rlc = getElementAt((ball.getX() + BALL_RADIUS * 2), (ball.getY() + BALL_RADIUS * 2));
+		if (luc != null) {
+			return (luc);
+		} else if (ruc != null) {
+			return (ruc);
+		} else if (llc != null) {
+			return (llc);
+		} else if (rlc != null) {
+			return (rlc);
 		} else {
 			return null;
 		}
