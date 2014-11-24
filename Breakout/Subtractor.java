@@ -8,10 +8,11 @@
 
 public class Subtractor {
 
+	//Constructor
 	public Subtractor(int startValue) {
 		counter = startValue;
 	}
-
+	// Subtract value by 1
 	public void nextValue() {
 		counter--;
 	}

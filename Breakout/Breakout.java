@@ -46,7 +46,7 @@ public class Breakout extends GraphicsProgram {
 	private static final int BRICK_HEIGHT = 8;
 
 	/** Radius of the ball in pixels */
-	private static final int BALL_RADIUS = 10;
+	private static final int BALL_RADIUS = 5;
 
 	/** Offset of the top brick row from the top */
 	private static final int BRICK_Y_OFFSET = 70;
@@ -126,6 +126,7 @@ public class Breakout extends GraphicsProgram {
 	 * SETUP METHODS
 	 */
 
+	// Initial x Velocity
 	private double setupXVelocity() {
 		vx = rgen.nextDouble(1.0, 3.0);
 		if (rgen.nextBoolean(0.5)) {
@@ -134,11 +135,13 @@ public class Breakout extends GraphicsProgram {
 		return (vx);
 	}
 
+	// Initial y velocity
 	private double setupYVelocity() {
 		vy = 3.0;
 		return (vy);
 	}
 
+	// Initial gamespeed
 	private void setupGameSpeed() {
 		speed = INITIALGAMESPEED; 
 	}

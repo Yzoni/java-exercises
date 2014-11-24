@@ -6,6 +6,7 @@
  */
 
 import java.io.*;
+import java.util.Arrays;
 
 import acm.graphics.*;
 import acm.program.*;
@@ -33,13 +34,16 @@ public class Hangman extends ConsoleProgram {
 			guesses =- 1;
 			checkCharacter();
 			displayWord();
+			if (wordFound()) break;
 		}
+		if (wordFound() == false) displayLost();
 	}
 
 	private void setupLexicon() {
 		lexicon = new HangmanLexicon();
 	}
 
+	// Print welcome message
 	private void setupWelcomeMessage() {
 		println("Welcome to Hangman");
 	}
@@ -52,39 +56,61 @@ public class Hangman extends ConsoleProgram {
 		RandomGenerator rgen = RandomGenerator.getInstance();
 		int randomindex = rgen.nextInt(0, lexicon.getWordCount());
 		word = lexicon.getWord(randomindex);
-		// Create array with characters of string
+		// Array with found characters
 		foundchararr = new String[word.length()];
-
+		// Set dashes for not yet guessed characters
+		for (int i = 0; i < word.length(); i++) {
+			foundchararr[i] = " - ";
+		}
+		// Array with characters of lexicon word
 		chararr = new String[word.length()];
+		// Put every character of the lexicon word in an array
 		for (int i = 0; i < word.length(); i++) {
 			chararr[i] = Character.toString(word.charAt(i));
 		}
 	}
 
+	// Print the current found characters of the word
 	private void displayWord() {
-		String foundword = ":";
+		String foundword = "";
 		for (int i = 0; i < word.length(); i++) {
 			foundword = foundword + foundchararr[i];
 		}
 		println("The word now looks like this: " + foundword);
 	}
 
+	// Print amount of guesses left until game over
 	private void displayGuessesLeft() {
 		println("You have " + guesses + "left.");
 	}
 
+	// Check if a input character is in the lexicon
 	private void checkCharacter() {
 		if (word.contains(character) == true) {
 			displayCharacterWin();
 			// Set character at right place if found
 			for (int i = 0; i < word.length(); i++) {
-				if (character == chararr[i]) {
+				// Compare input character with character in lexicon word
+				if (character .equals(chararr[i]) ) {
+					// Assign character to the found word
 					foundchararr[i] = character;
 				}
 			}
 		} else {
 			displayCharacterFail();
 		}
+	}
+
+	private Boolean wordFound() {
+		if (Arrays.equals(foundchararr, chararr)) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+	private void displayLost() {
+		println("You hang.");
 	}
 
 	private void displayCharacterFail() {
