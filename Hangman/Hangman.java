@@ -49,27 +49,36 @@ public class Hangman extends ConsoleProgram {
 		getWordLexicon();
 		// Keep asking for characters untill there are no guesses left
 		while (wrongguessescount < AMOUNT_GUESSES) {
-			displayWord();
-			try {precharacterstring = readLine("Your Guess: ");
-			} catch (StringIndexOutOfBoundsException e) {
-				e.printStackTrace();
-			}
-			char precharacter = precharacterstring.charAt(0);
+			displayCurrentWord();
+			String precharacterstring = readLine("Your Guess: ");
+			// Transform string to character tu use isLetter funtion
+			try {precharacter = precharacterstring.charAt(0);
+			// Catch excepetion if input is empty
+			} catch (StringIndexOutOfBoundsException e) {}
 			// Check if input is 1 char and is a letter
-			if (precharacterstring.length() > 1 || Character.isLetter(precharacter) == false) {
-				println("Input needs to be one letter! Try again.");
-			} else {
+			if (precharacterstring.length() == 1 && Character.isLetter(precharacter)) {
+				// Transform string to all uppercase
 				character = precharacterstring.toUpperCase();
-				checkCharacter();
+				// Check if the character is in the word
+				if (checkCharacter()) {
+					correctCharacter();
+				} else {
+					wrongCharacter();
+				}
+			} else {
+				println("Input needs to be one letter! Try again.");
 			}
 			if (checkWordFound()) {
-				displayWord();
+				// Display the completed word
+				displayCurrentWord();
 				displayGameWin();
+				// Stop the game when the whole word is found
 				break;
 			}
 		}
 		if (checkWordFound() == false) displayGameLost();
 		String stub = readLine("Press ENTER to play again");
+		// Restart the game
 		run();
 	}
 
@@ -98,6 +107,7 @@ public class Hangman extends ConsoleProgram {
 	 * GAMEPLAY METHODS
 	 */
 
+	// Get a new word from the lexicon
 	private void getWordLexicon() {
 		// Generate random integer, which reperesents the line from which a lexicon word is chosen
 		RandomGenerator rgen = RandomGenerator.getInstance();
@@ -118,26 +128,34 @@ public class Hangman extends ConsoleProgram {
 	}
 
 	// Check if a input character is in the lexicon
-	private void checkCharacter() {
-		if (word.contains(character) == true) {
-			displayCharacterWin();
-			// Set character at the right place in the array
-			for (int i = 0; i < word.length(); i++) {
-				// Compare input character with character in lexicon word
-				if (character .equals(chararr[i]) ) {
-					// Assign character to the array that keeps track of found chars
-					foundchararr[i] = character;
-				}
-			}
+	private Boolean checkCharacter() {
+		if (word.contains(character)) {
+			return true;
 		} else {
-			// Increment the wrong guess counter
-			wrongguessescount += 1;
-			wrongguesses.add(character);
-			displayCharacterFail();
-			String wrongguesses = getWrongGuesses();
-			canvas.noteIncorrectGuess(wrongguesses, wrongguessescount);
+			return false;
 		}
-	}	
+	}
+
+	// When correct character
+	private void correctCharacter() {
+		displayCharacterWin();
+		// Set character at the right place in the array
+		for (int i = 0; i < word.length(); i++) {
+			// Compare input character with character in lexicon word
+			if (character .equals(chararr[i]) ) {
+				// Assign character to the array that keeps track of found chars
+				foundchararr[i] = character;
+			}
+		}		
+	}
+
+	// When wrong character
+	private void wrongCharacter() {
+		// Increment the wrong guess counter
+		wrongguessescount += 1;
+		wrongguesses.add(character);
+		displayCharacterFail();
+	}
 
 	// Check if the whole word is found by matching the two arrays
 	private Boolean checkWordFound() {
@@ -148,7 +166,8 @@ public class Hangman extends ConsoleProgram {
 		}
 	}
 
-	private String foundWord() {
+	// Create string from correct characters found by the user
+	private String foundCharactersToString() {
 		foundword = "";
 		for (int i = 0; i < word.length(); i++) {
 			foundword = foundword + foundchararr[i];
@@ -156,28 +175,22 @@ public class Hangman extends ConsoleProgram {
 		return foundword;
 	}
 
-	/*
-	 * MESSAGE TO SCREEN METHODS
-	 */
-
-	// Print the current found characters of the word
-	private void displayWord() {
-		foundword = foundWord();
-		println("The word now looks like this: " + foundword);
-		canvas.displayWord(foundword);
-	}
-
-	// Print amount of guesses left until game over
-	private void displayGuessesLeft() {
-		println("You have " + wrongguessescount + "left.");
-	}
-
-	private String getWrongGuesses() {
+	// Create string from wrong characters found by the user
+	private String foundWrongCharactersToString() {
 		String listwrongcharacters = "";
 		for (int i = 0; i < wrongguesses.size(); i++) {
 			listwrongcharacters = listwrongcharacters + wrongguesses.get(i);
 		}
 		return listwrongcharacters;
+	}
+
+	/*
+	 * MESSAGE TO SCREEN METHODS
+	 */
+
+	// Print amount of guesses left until game over
+	private void displayGuessesLeft() {
+		println("You have " + wrongguessescount + "left.");
 	}
 
 	private void displayGameWin() {
@@ -186,27 +199,45 @@ public class Hangman extends ConsoleProgram {
 
 	private void displayGameLost() {
 		println("You hang.");
+		println("The word was: " + word);
+	}
+
+	// Print the current found characters of the word
+	private void displayCurrentWord() {
+		foundword = foundCharactersToString();
+		println("The word now looks like this: " + foundword);
+		canvas.displayWord(foundword);
 	}
 
 	private void displayCharacterFail() {
-		println("There are no " + character + " in the word."); 
+		println("There are no " + character + "'s in the word."); 
+		String wrongguesses = foundWrongCharactersToString();
+		canvas.noteIncorrectGuess(wrongguesses, wrongguessescount);
 	}
 
 	private void displayCharacterWin() {
 		println("The guess is correct.");
 	}
 
+	// Lexicon and Canvas objects
 	private HangmanLexicon lexicon;
 	private HangmanCanvas canvas;
 
+	// Currently found characters
 	private String[] foundchararr;
+	// All characters of the lexicon word
 	private String[] chararr;
+	// Wrong guessed characters
 	private ArrayList<String> wrongguesses;
 
+	// Current lexicon word
 	private String word;
+	// Current character
 	private String character;
+	// All currently found characters as string
 	private String foundword;
+	// Counter which keeps track of the amount of wrong guesses
 	private int wrongguessescount;
-
-	private String precharacterstring;
+	// Nescecary for to check if input is a letter
+	private char precharacter;
 }

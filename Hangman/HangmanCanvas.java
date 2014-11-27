@@ -9,7 +9,9 @@ import acm.util.*;
 
 public class HangmanCanvas extends GCanvas
 {
-	/* Constants for the simple version of the picture (in pixels) */
+	/* Constants for the simple version of the picture (in pixels) 
+	 * Note that I reduced the sizes from the original, because these are better
+	 */
 	private static final int SCAFFOLD_HEIGHT = 288;
 	private static final int BEAM_LENGTH = 115;
 	private static final int ROPE_LENGTH = 14;
@@ -22,11 +24,8 @@ public class HangmanCanvas extends GCanvas
 	private static final int LEG_LENGTH = 86;
 	private static final int FOOT_LENGTH = 22;
 
-	private final int HALF_WIDTH = (getWidth() / 2);
-	private final int HALF_HEIGTH = (getHeight() / 2);
 
-
-	/** Resets the display so that only the scaffold appears */
+	/** Resets the display so that only the scaffold appears on a new game*/
 	public void reset()
 	{
 		this.removeAll();
@@ -51,6 +50,7 @@ public class HangmanCanvas extends GCanvas
 	 * user.  Calling this method causes the next body part to appear
 	 * on the scaffold and adds the letter to the list of incorrect
 	 * guesses that appears at the bottom of the window.
+	 * Arguments are the wrong letter and an integer defining the part to show
 	 */
 	public void noteIncorrectGuess(String letter, int part) {
 		drawIncorrectLetter(letter);
@@ -82,6 +82,23 @@ public class HangmanCanvas extends GCanvas
 			default: throw new ErrorException("noteIncorrectGuess: Illegal index");		
 		}
 	}
+
+	// Draw the incorrect letters to the canvas
+	private void drawIncorrectLetter(String letter) {
+		// Before drawing a new letter, remove the previous drawn letters
+		if (incorrectletter != null) remove(incorrectletter);
+			// Add the new letter to the previous letters
+			incorrectletter = new GLabel("Tried incorrect letters: " + letter);
+			// Set the location to a little under the center of the canvas
+			incorrectletter.setLocation((getWidth() / 2) - (incorrectletter.getWidth() / 2), (getHeight() / 2) + 200);
+			add(incorrectletter);
+	}	
+
+	/**
+	 * Methods for every bodypart
+	 * All parts are aligned with the y center of the canvas as their base.
+	 */
+
 
 	private void drawScaffold() {
 		GCompound scaffold = new GCompound();
@@ -155,12 +172,8 @@ public class HangmanCanvas extends GCanvas
 		add(leftfoot);
 	}	
 
-	private void drawIncorrectLetter(String letter) {
-		if (incorrectletter != null) remove(incorrectletter);
-			incorrectletter = new GLabel("Tried incorrect letters: " + letter);
-			incorrectletter.setLocation((getWidth() / 2) - (incorrectletter.getWidth() / 2), (getHeight() / 2) + 200);
-			add(incorrectletter);
-	}
+	// Already guessed letters
 	private GLabel guessed;
+	// Incorrect guessed letters
 	private GLabel incorrectletter;
 }
