@@ -1,5 +1,6 @@
 /*
  * File: HangmanCanvas.java
+ * Name Y. de Boer 10786015
  * ------------------------
  * This file keeps track of the Hangman display.
  */

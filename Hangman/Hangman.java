@@ -1,12 +1,9 @@
 /*
  * File: Hangman.java
+ * Name Y. de Boer 10786015
  * ------------------
  * This program will eventually play the Hangman game from
  * Assignment #4.
-
-  TO DO
-  give error when user input is two times correct letter
-  give error when user input is empty
  */
 
 import java.io.*;
