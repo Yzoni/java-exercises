@@ -32,6 +32,7 @@ public class HangmanLexicon {
 			e.printStackTrace();
 		}
 		String word = readWord(in);
+		// Put all words separate in an array list
 		words = new ArrayList<String>();
 		// Keep reading untill the end of the file
 		while(word != null) {
