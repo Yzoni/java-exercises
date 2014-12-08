@@ -183,7 +183,6 @@ public class AdvRoom extends Adventure {
 				room.descriptionlist[i] = (roomdescriptionarrlist.get(i));
 			}
 
-
 			// Read directions
 			while (true) {
 				// Read a direction line
@@ -201,10 +200,12 @@ public class AdvRoom extends Adventure {
 				// If there is no slash in the string set null for the key
 				if(slash == -1){
 					nextroom = Integer.parseInt(line.substring(space).trim());
+					// add a new motiontable entry to an arralist without a key
 					room.motiontablearrlist.add(new AdvMotionTableEntry(dir, nextroom, null));
 				} else {
 					nextroom = Integer.parseInt(line.substring(space, slash).trim());
 					String key = line.substring(slash + 1).trim();
+					// add a new motiontable entry to an arralist including a key
 					room.motiontablearrlist.add(new AdvMotionTableEntry(dir, nextroom, key));
 				}
 			}
@@ -233,5 +234,6 @@ public class AdvRoom extends Adventure {
 	private ArrayList<AdvObject> objectlist = new ArrayList<AdvObject>();
 
 	private AdvMotionTableEntry[] motiontable;
+
 	private String[] descriptionlist;
 }

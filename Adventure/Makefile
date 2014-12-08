@@ -16,3 +16,8 @@ AdvRoom.class: AdvRoom.java AdvObject.class AdvMotionTableEntry.class
 
 clean:
 	rm -f *.class
+
+submit: pset5.zip
+
+pset5.zip: *.java acm.jar AdventureMagic.jar *.txt Makefile
+	zip $@ $^
