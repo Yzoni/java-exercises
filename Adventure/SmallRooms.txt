@@ -7,7 +7,7 @@ to the west.
 -----
 WEST       2
 UP         2
-NORTH      3
+NORTH      3/KEYS
 IN         3
 SOUTH      4
 DOWN       4

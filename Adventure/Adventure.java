@@ -18,116 +18,125 @@ import java.util.*;
  * <code>ConsoleProgram</code> directly.
  */
 
-public class Adventure extends AdventureMagicSuperclass {
+public class Adventure extends ConsoleProgram {
 
 	/**
 	 * Runs the Adventure program.
 	 */
 	public void run() {
-		super.run();  // Replace with your code
-		
-		/*
 		initializeGame();
-		while(true) {
+		while(currentroomnumber != 0) {
 			doTurn();
 		}
-		*/
+		readLine("_Press enter to exit_");
+		doQuit();
 	}
 
 	private void initializeGame() {
+		currentroomnumber = 1;
 		getAdventure();
 		initRooms();
-		initObjects();
-		initSynonyms();
+		if (tiny == false) {
+			initObjects();
+			initSynonyms();
+		}
 	}
 
 	private void getAdventure() {
-		println("Adventure name choices; Crowther or Small");
-		String adventurename = readLine("Give adventure name: " );
+		println("Adventure name choices; Crowther, Small or Tiny");
+		String adventurename = readLine("Enter adventure name (case sensitive): " );
 		if (adventurename .equals("Crowther")) {
 			adventureread = "Crowther";
 		} else if (adventurename .equals("Small")) {
 			adventureread = "Small";
+		} else if (adventurename .equals("Tiny")) {
+			adventureread = "Tiny";
+			tiny = true;
 		} else {
 			println("Give a proper adventure name!");
 		}
-		try { 
+		try {
 			roomsreader = new BufferedReader(new FileReader(adventureread + "Rooms.txt"));
-			objectsreader = new BufferedReader(new FileReader(adventureread + "Objects.txt"));
-			synonymsreader = new BufferedReader(new FileReader(adventureread + "Synonyms.txt"));
-		} catch (IOException e) {}
+			if (tiny == false) {
+				objectsreader = new BufferedReader(new FileReader(adventureread + "Objects.txt"));
+				synonymsreader = new BufferedReader(new FileReader(adventureread + "Synonyms.txt"));
+			}
+		} catch (IOException e) {
+			getAdventure();
+		}
 	}
 
 	private void initRooms() {
-		rooms = new HashMap<Integer, AdvRoom>();
+		roomslist = new ArrayList<AdvRoom>();
 		while (true) {
+			
 			AdvRoom room = AdvRoom.readRoom(roomsreader);
 			if(room == null) break;
 			int roomnumber = room.getRoomNumber();
-			rooms.put(new Integer(roomnumber), room);
+			//rooms.put(roomnumber, room);
+			roomslist.add(room);
+		}
+		try {
+			roomsreader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
  
 	private void initObjects() {
-		objects = new HashMap<String, AdvObject>();
+		objectslist = new ArrayList<AdvObject>();
 		while (true) {
 			AdvObject object = AdvObject.readObject(objectsreader);
 			if(object == null) break;
-			String objectname =  object.getName();
-			objects.put(objectname, object);
+			objectslist.add(object);
+
+			// get room object by number and add object to it
+			int initialobjectlocation = object.getInitialLocation();
+			for (int i = 0; i < roomslist.size(); i++) {
+				AdvRoom objectroom = roomslist.get(i);
+				if (objectroom.getRoomNumber() == initialobjectlocation) {
+					objectroom.addObject(object);
+				}
+			}
+		}
+		try { 
+			roomsreader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
 	private void initSynonyms() {
 		synonyms = new HashMap<String, String>();
-		while (true) {
+		String line = "";
+		try {
+			while (true) {
+				line = synonymsreader.readLine();
+				if(line == null) break;
+				String[] splitline = line.split("=");
+				synonyms.put(splitline[0], splitline[1]);
+			}
+			synonymsreader.close();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
-
-
 
 	private void doTurn() {
-
-	}
-
-	private int doMove(String direction) {
-		AdvMotionTableEntry[] motiontable = room.getMotionTable();
-		for(int i = 0; i < motiontable.length; i++){
-			AdvMotionTableEntry motionentry = motiontable[i];
-			if (motionentry.getDirection().equals(direction)) {
-				if (motionentry.getKeyName() == null) {
-					return motionentry.getDestinationRoom();
-				} else {
-					if(inventory.contains(objects.get(motionentry.getKeyName()))){
-						return motionentry.getDestinationRoom();
-					} else {
-						println("Key not in inventory");
-					}					
-				}
-			} else {
-				println("Invalid direction");
-			}
+		for (int i = 0; i < roomslist.size(); i++) {
+			room = roomslist.get(i);
+			if (room.getRoomNumber() == currentroomnumber) break;
 		}
-		return -1;
-	}
-
-	// Exectute input with 
-	private void doInput(String[] input) {
-		if (motion.contains(input[0])) {
-			doInput(input[0]);
-		} else if (input[0].equals("INVENTORY")) {
-			displayInventory();
-		} else if (input[0].equals("TAKE")) {
-			doTake(input[1]);
-		} else if (input[0].equals("DROP")) {
-			doDrop(input[1]);
-		} else if (input[0].equals("HELP")) {
-			displayHelp();
-		} else if (input[0].equals("QUIT")) {
-			doQuit();
-		} else {
-			print("Command not found!");
+		if (room.hasBeenVisited() == false) {
+			displayDescription();
 		}
+		displayObjects();
+		String[] input = getInput();
+		if (synonyms.containsKey(input[0]) == true) {
+			input = checkSynonym(input);
+		}
+		doInput(input);
+		room.setVisited(true);
 	}
 
 	// Get input and return input command with arguments as an array
@@ -139,37 +148,117 @@ public class Adventure extends AdventureMagicSuperclass {
 		return input;
 	}
 
+	// Exectute input with 
+	private void doInput(String[] input) {
+		ArrayList<String> motion = getPossibleMoves();
+		if (motion.contains(input[0])) {
+			doMove(input[0]);
+		} else if (input[0].equals("INVENTORY")) {
+			displayInventory();
+		} else if (input[0].equals("TAKE")) {
+			doTake(input[1]);
+		} else if (input[0].equals("DROP")) {
+			doDrop(input[1]);
+		} else if (input[0].equals("LOOK")) {
+			displayDescription();
+		} else if (input[0].equals("HELP")) {
+			displayHelp();
+		} else if (input[0].equals("QUIT")) {
+			doQuit();
+		} else {
+			println("Command not found!");
+		}
+	}
 
+	private String[] checkSynonym(String[] input) {
+		String syn = synonyms.get(input[0]);
+		if (syn == null) {
+			return null;
+		} else {
+			input[0] = syn;
+			return input;
+		}
+	}
+
+	private void doMove(String direction) {
+		AdvMotionTableEntry[] motiontable = room.getMotionTable();
+		int oldroom = currentroomnumber;
+		for(int i = 0; i < motiontable.length; i++){
+			AdvMotionTableEntry motionentry = motiontable[i];
+			if (motionentry.getDirection().equals(direction)) {
+				if (motionentry.getKeyName() == null) {
+					currentroomnumber = motionentry.getDestinationRoom();
+					break;
+				} else {
+					String neededkeyname = motionentry.getKeyName();
+					for (int j = 0; j < inventory.size(); j++) {
+						AdvObject object = inventory.get(j);
+						String inventorykeyname = object.getName();
+						if(neededkeyname .equals(inventorykeyname)) {
+							currentroomnumber = motionentry.getDestinationRoom();
+							break;
+						} 
+					}
+					println(neededkeyname + " not in inventory");
+					break;
+				}
+			}
+		}
+		if (oldroom == currentroomnumber) {
+			println("Can't move in that direction!");
+		}
+	}
+
+	private ArrayList<String> getPossibleMoves() {
+		ArrayList<String> motion = new ArrayList<String>();
+			motion.add("UP");
+			motion.add("DOWN");
+			motion.add("NORTH");
+			motion.add("SOUTH");
+			motion.add("WEST");
+			motion.add("EAST");
+			motion.add("IN");
+			motion.add("OUT");
+		return motion;
+
+	}
 
 	private void doTake(String argument) {
-		object = objects.get(argument);
-		if (object == null) {
-			println("Object does not exist in this world!");
+		AdvObject object = getObjectByName(argument);
+		// check if current room contains object transfer object to inventory
+		if (room.containsObject(object)) {
+			room.removeObject(object);
+			inventory.add(object);
+			println("Took: " + object.getDescription());				
 		} else {
-			// check if current room contains object transfer object to inventory
-			if (room.containsObject(object)) {
-				room.removeObject(object);
-				inventory.add(object);
-				println("Took: " + object);				
-			} else {
-				println("Object not found.");
-			}
+			println("Object not found.");
 		}
 	}
 
 	private void doDrop(String argument) {
-		object = objects.get(argument);
+		AdvObject object = getObjectByName(argument);
 		if (object == null) {
 			println("Object does not exist in this world!");
 		}
 		if (inventory.contains(object)) {
 			room.addObject(object);
 			inventory.remove(object);
-			println("Dropped: " + object);
+			println("Dropped: " + object.getDescription());
 		} else {
 			println("Object not in inventory!");
 		}
 	}
+
+	private AdvObject getObjectByName(String objectname) {
+		for (int i = 0; i < objectslist.size(); i++) {
+			AdvObject object = objectslist.get(i);
+			if (objectname .equals(object.getName())) {
+				return object;
+			}
+		}
+		// Return null if object not found
+		return null;
+	}	
 
 	private void doQuit() {
 		System.exit(0);
@@ -196,40 +285,46 @@ public class Adventure extends AdventureMagicSuperclass {
 	}
 
 	private void displayDescription() {
-		if (room.hasBeenVisited()) {
-			println(room.getName());
-		} else {
-			String[] description = room.getDescription();
-			for(int i = 0; i < description.length; i++){
-				println(description[i]);
-			}			
+		String[] description = room.getDescription();
+		for(int i = 0; i < description.length; i++){
+			println(description[i]);
 		}
-		// Print objects in room
+	}
+
+	private void displayObjects() {
+		if (room.getObjectCount() > 0) {
+			println("Objects laying around: ");
+		}
+		for(int i = 0; i < room.getObjectCount(); i++){
+				AdvObject thisobject = room.getObject(i);
+				print(" - " + thisobject.getDescription());
+				println("");
+		}		
 	}
 
 	private void displayInventory() {
 		println("Your inventory: ");
 		for(int i = 0; i < inventory.size(); i++){
-			println(inventory.get(i).getDescription());
+			println(" - " + inventory.get(i).getDescription());
 		}
 	}
 
 	private String[] input;
 
+	private int currentroomnumber;
+
 	private AdvRoom room;
-	private AdvObject object;
 
 	private String adventureread;
+	private Boolean tiny = false;
 
 	private BufferedReader roomsreader;
 	private BufferedReader objectsreader;
 	private BufferedReader synonymsreader;
 
-	private HashMap<Integer, AdvRoom> rooms;
-	private HashMap<String, AdvObject> objects;
+	private ArrayList<AdvRoom> roomslist;
+	private ArrayList<AdvObject> objectslist;
 	private HashMap<String, String> synonyms;
-
-	private ArrayList<String> motion = new ArrayList<String>();
 
 	private ArrayList<AdvObject> inventory = new ArrayList<AdvObject>();
 }
