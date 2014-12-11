@@ -1,6 +1,6 @@
 /*
  * File: Adventure.java
- * Names: Y. de Boer
+ * Names: Y. de Boer 10786015
  * -------------------------------------------------------
  * This program plays the Adventure game from Assignment #6.
  */
@@ -45,11 +45,13 @@ public class Adventure extends ConsoleProgram {
 			initSynonyms();
 		}
 		initPossibleMoves();
+		initInventory();
 	}
 
 	private void getAdventure() {
 		println("Adventure name choices; Crowther, Small or Tiny");
 		String adventurename = readLine("Enter adventure name (case sensitive): " );
+		String adventureread = "";
 		if (adventurename .equals("Crowther")) {
 			adventureread = "Crowther";
 		} else if (adventurename .equals("Small")) {
@@ -88,7 +90,7 @@ public class Adventure extends ConsoleProgram {
 		}
 	}
  
- 	// Read all objects and add them to an arraylist
+	// Read all objects and add them to an arraylist
 	private void initObjects() {
 		objectslist = new ArrayList<AdvObject>();
 		while (true) {
@@ -126,6 +128,10 @@ public class Adventure extends ConsoleProgram {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void initInventory() {
+		inventory = new ArrayList<AdvObject>();
 	}
 
 	private void initPossibleMoves() {
@@ -329,15 +335,14 @@ public class Adventure extends ConsoleProgram {
 		}
 	}
 
-	private String[] input;
-
+	// Keeps track of the current room in
 	private int currentroomnumber;
 
+	// Arralist with valid direction commands
 	private ArrayList<String> motion;
 
 	private AdvRoom room;
 
-	private String adventureread;
 	private Boolean tiny = false;
 
 	private BufferedReader roomsreader;
@@ -348,5 +353,5 @@ public class Adventure extends ConsoleProgram {
 	private ArrayList<AdvObject> objectslist;
 	private HashMap<String, String> synonyms;
 
-	private ArrayList<AdvObject> inventory = new ArrayList<AdvObject>();
+	private ArrayList<AdvObject> inventory;
 }
