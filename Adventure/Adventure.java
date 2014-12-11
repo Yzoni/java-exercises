@@ -88,6 +88,7 @@ public class Adventure extends ConsoleProgram {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		setCurrentRoomObject();
 	}
  
 	// Read all objects and add them to an arraylist
@@ -151,12 +152,16 @@ public class Adventure extends ConsoleProgram {
 	 * GAME PLAY
 	 */
 
-	private void doTurn() {
-		// Get the current room object from the current roomnumber
+	// Get the current room object from the current roomnumber
+	private void setCurrentRoomObject() {
 		for (int i = 0; i < roomslist.size(); i++) {
 			room = roomslist.get(i);
 			if (room.getRoomNumber() == currentroomnumber) break;
 		}
+	}
+
+	private void doTurn() {
+		displayName();
 		// Do not display description if room has been visited befores
 		if (room.hasBeenVisited() == false) {
 			displayDescription();
@@ -170,7 +175,7 @@ public class Adventure extends ConsoleProgram {
 			}
 		}
 		doInput(input);
-		room.setVisited(true);
+			room.setVisited(true);
 	}
 
 	// Get input and return input command with arguments as an array
@@ -186,6 +191,7 @@ public class Adventure extends ConsoleProgram {
 		// For move input, check if legal direction
 		if (motion.contains(input[0])) {
 			doMove(input[0]);
+			doForced();
 		} else if (input[0].equals("INVENTORY")) {
 			displayInventory();
 		} else if (input[0].equals("TAKE")) {
@@ -211,6 +217,19 @@ public class Adventure extends ConsoleProgram {
 		}
 	}
 
+	// Checks if current room is forced, if so, execute force
+	// Move to forced room with item if item is in inventory
+	private void doForced() {
+		AdvMotionTableEntry[] motiontable = room.getMotionTable();
+		for (int i = 0; i < motiontable.length; i++) {
+			AdvMotionTableEntry motionentry = motiontable[i];
+			String checkforced = motionentry.getDirection();
+			if (checkforced .equals("FORCED")) {
+					doMove("FORCED");	
+			}
+		}
+	}
+
 	private void doMove(String direction) {
 		// Get the motion table from current room
 		AdvMotionTableEntry[] motiontable = room.getMotionTable();
@@ -219,24 +238,45 @@ public class Adventure extends ConsoleProgram {
 			AdvMotionTableEntry motionentry = motiontable[i];
 			// Check if motion entry is user input direction
 			if (motionentry.getDirection().equals(direction)) {
-				// If nextroom does not require a key
-				if (motionentry.getKeyName() == null) {
-					currentroomnumber = motionentry.getDestinationRoom();
-					break;
-				// If nextroom requires a key
-				} else {
-					String neededkeyname = motionentry.getKeyName();
-					// Check if key is in inventory
-					for (int j = 0; j < inventory.size(); j++) {
-						AdvObject object = inventory.get(j);
-						String inventorykeyname = object.getName();
-						if(neededkeyname .equals(inventorykeyname)) {
+				// If room is forced
+				if (direction .equals("FORCED")) {
+					// If two forced options are available where one needs a key, go into that one 
+					// when key object is in inventory
+					Boolean keyrequired = checkKeyRequired(motionentry);
+					Boolean keyininventory = checkItemInInventory(motionentry.getKeyName());
+					if (keyrequired == true) {
+						if (keyininventory == true) {
+							displayName();
+							displayDescription();	
 							currentroomnumber = motionentry.getDestinationRoom();
 							break;
-						} 
+						} else {
+							motionentry = motiontable[i + 1];
+							displayName();
+							displayDescription();
+							currentroomnumber = motionentry.getDestinationRoom();
+							break;							
+						}
+					} else {
+						displayName();
+						displayDescription();
+						currentroomnumber = motionentry.getDestinationRoom();						
 					}
-					println(neededkeyname + " not in inventory");
-					break;
+				// If room is not forced
+				} else {
+					Boolean keyrequired = checkKeyRequired(motionentry);
+					if (keyrequired == true) {
+					String neededkeyname = motionentry.getKeyName();
+					// Check if key is in inventory
+					if (checkItemInInventory(neededkeyname) == true) {
+						currentroomnumber = motionentry.getDestinationRoom();
+					} else {
+						println("Key object not found!");
+					}
+					// No key required		
+					} else {
+						currentroomnumber = motionentry.getDestinationRoom();
+					}
 				}
 			}
 		}
@@ -244,6 +284,25 @@ public class Adventure extends ConsoleProgram {
 		if (oldroom == currentroomnumber) {
 			println("Can't move in that direction!");
 		}
+		setCurrentRoomObject();
+	}
+
+	private Boolean checkKeyRequired(AdvMotionTableEntry motionentry) {
+		// If nextroom does not require a key
+		if (motionentry.getKeyName() == null) return false;
+		// If nextroom requires a key
+		return true;
+	}
+
+	private Boolean checkItemInInventory(String object) {
+		for (int j = 0; j < inventory.size(); j++) {
+			AdvObject invobject = inventory.get(j);
+			String inventorykeyname = invobject.getName();
+			if (object .equals(inventorykeyname)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private void doTake(String argument) {
@@ -308,6 +367,11 @@ public class Adventure extends ConsoleProgram {
 		println("To reprint the detailed description of where you are, say LOOK.  If you");
 		println("want to end your adventure, say QUIT.");
 		println("");
+	}
+
+	private void displayName() {
+		String name = room.getName();
+		println(name);
 	}
 
 	private void displayDescription() {
