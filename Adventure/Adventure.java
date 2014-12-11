@@ -1,7 +1,6 @@
 /*
  * File: Adventure.java
- * Names: <fill in>
- * Section leader who is grading the assignment: <fill in>
+ * Names: Y. de Boer
  * -------------------------------------------------------
  * This program plays the Adventure game from Assignment #6.
  */
@@ -32,6 +31,11 @@ public class Adventure extends ConsoleProgram {
 		doQuit();
 	}
 
+
+	/*
+	 * INITIALIZATION
+	 */
+
 	private void initializeGame() {
 		currentroomnumber = 1;
 		getAdventure();
@@ -40,6 +44,7 @@ public class Adventure extends ConsoleProgram {
 			initObjects();
 			initSynonyms();
 		}
+		initPossibleMoves();
 	}
 
 	private void getAdventure() {
@@ -57,6 +62,7 @@ public class Adventure extends ConsoleProgram {
 		}
 		try {
 			roomsreader = new BufferedReader(new FileReader(adventureread + "Rooms.txt"));
+			// Tinyy does not have an objects and synonyms file
 			if (tiny == false) {
 				objectsreader = new BufferedReader(new FileReader(adventureread + "Objects.txt"));
 				synonymsreader = new BufferedReader(new FileReader(adventureread + "Synonyms.txt"));
@@ -66,14 +72,13 @@ public class Adventure extends ConsoleProgram {
 		}
 	}
 
+	// Read all rooms and add them to an arraylist
 	private void initRooms() {
 		roomslist = new ArrayList<AdvRoom>();
 		while (true) {
-			
 			AdvRoom room = AdvRoom.readRoom(roomsreader);
-			if(room == null) break;
+			if (room == null) break;
 			int roomnumber = room.getRoomNumber();
-			//rooms.put(roomnumber, room);
 			roomslist.add(room);
 		}
 		try {
@@ -83,6 +88,7 @@ public class Adventure extends ConsoleProgram {
 		}
 	}
  
+ 	// Read all objects and add them to an arraylist
 	private void initObjects() {
 		objectslist = new ArrayList<AdvObject>();
 		while (true) {
@@ -90,7 +96,7 @@ public class Adventure extends ConsoleProgram {
 			if(object == null) break;
 			objectslist.add(object);
 
-			// get room object by number and add object to it
+			// Get objects in room and add the objects from the objects file to them
 			int initialobjectlocation = object.getInitialLocation();
 			for (int i = 0; i < roomslist.size(); i++) {
 				AdvRoom objectroom = roomslist.get(i);
@@ -106,12 +112,12 @@ public class Adventure extends ConsoleProgram {
 		}
 	}
 
+	// Read synonyms and add them to a hashmap
 	private void initSynonyms() {
 		synonyms = new HashMap<String, String>();
-		String line = "";
 		try {
 			while (true) {
-				line = synonymsreader.readLine();
+				String line = synonymsreader.readLine();
 				if(line == null) break;
 				String[] splitline = line.split("=");
 				synonyms.put(splitline[0], splitline[1]);
@@ -122,25 +128,46 @@ public class Adventure extends ConsoleProgram {
 		}
 	}
 
+	private void initPossibleMoves() {
+		motion = new ArrayList<String>();
+			motion.add("UP");
+			motion.add("DOWN");
+			motion.add("NORTH");
+			motion.add("SOUTH");
+			motion.add("WEST");
+			motion.add("EAST");
+			motion.add("IN");
+			motion.add("OUT");
+	}
+
+
+	/*
+	 * GAME PLAY
+	 */
+
 	private void doTurn() {
+		// Get the current room object from the current roomnumber
 		for (int i = 0; i < roomslist.size(); i++) {
 			room = roomslist.get(i);
 			if (room.getRoomNumber() == currentroomnumber) break;
 		}
+		// Do not display description if room has been visited befores
 		if (room.hasBeenVisited() == false) {
 			displayDescription();
 		}
 		displayObjects();
 		String[] input = getInput();
-		if (synonyms.containsKey(input[0]) == true) {
-			input = checkSynonym(input);
+		// Check if input has a synonym if so, make input the synonym
+		if (tiny == false) {
+			if (synonyms.containsKey(input[0]) == true) {
+				input[0] = synonyms.get(input[0]);
+			}
 		}
 		doInput(input);
 		room.setVisited(true);
 	}
 
 	// Get input and return input command with arguments as an array
-	// Also check if argument exists
 	private String[] getInput() {
 		String line = readLine("> ");
 		line = line.toUpperCase();
@@ -150,15 +177,23 @@ public class Adventure extends ConsoleProgram {
 
 	// Exectute input with 
 	private void doInput(String[] input) {
-		ArrayList<String> motion = getPossibleMoves();
+		// For move input, check if legal direction
 		if (motion.contains(input[0])) {
 			doMove(input[0]);
 		} else if (input[0].equals("INVENTORY")) {
 			displayInventory();
 		} else if (input[0].equals("TAKE")) {
-			doTake(input[1]);
+			try {
+				doTake(input[1]);
+			} catch (Exception e) {
+				println("No object specified");
+			}
 		} else if (input[0].equals("DROP")) {
-			doDrop(input[1]);
+			try {
+				doDrop(input[1]);
+			} catch (Exception e) {
+				println("No object specified");
+			}
 		} else if (input[0].equals("LOOK")) {
 			displayDescription();
 		} else if (input[0].equals("HELP")) {
@@ -170,27 +205,22 @@ public class Adventure extends ConsoleProgram {
 		}
 	}
 
-	private String[] checkSynonym(String[] input) {
-		String syn = synonyms.get(input[0]);
-		if (syn == null) {
-			return null;
-		} else {
-			input[0] = syn;
-			return input;
-		}
-	}
-
 	private void doMove(String direction) {
+		// Get the motion table from current room
 		AdvMotionTableEntry[] motiontable = room.getMotionTable();
 		int oldroom = currentroomnumber;
 		for(int i = 0; i < motiontable.length; i++){
 			AdvMotionTableEntry motionentry = motiontable[i];
+			// Check if motion entry is user input direction
 			if (motionentry.getDirection().equals(direction)) {
+				// If nextroom does not require a key
 				if (motionentry.getKeyName() == null) {
 					currentroomnumber = motionentry.getDestinationRoom();
 					break;
+				// If nextroom requires a key
 				} else {
 					String neededkeyname = motionentry.getKeyName();
+					// Check if key is in inventory
 					for (int j = 0; j < inventory.size(); j++) {
 						AdvObject object = inventory.get(j);
 						String inventorykeyname = object.getName();
@@ -204,28 +234,15 @@ public class Adventure extends ConsoleProgram {
 				}
 			}
 		}
+		// If no move has been done, assume it was not possible to move to input direction
 		if (oldroom == currentroomnumber) {
 			println("Can't move in that direction!");
 		}
 	}
 
-	private ArrayList<String> getPossibleMoves() {
-		ArrayList<String> motion = new ArrayList<String>();
-			motion.add("UP");
-			motion.add("DOWN");
-			motion.add("NORTH");
-			motion.add("SOUTH");
-			motion.add("WEST");
-			motion.add("EAST");
-			motion.add("IN");
-			motion.add("OUT");
-		return motion;
-
-	}
-
 	private void doTake(String argument) {
 		AdvObject object = getObjectByName(argument);
-		// check if current room contains object transfer object to inventory
+		// check if current room contains object transfer object to inventory arraylist
 		if (room.containsObject(object)) {
 			room.removeObject(object);
 			inventory.add(object);
@@ -237,9 +254,7 @@ public class Adventure extends ConsoleProgram {
 
 	private void doDrop(String argument) {
 		AdvObject object = getObjectByName(argument);
-		if (object == null) {
-			println("Object does not exist in this world!");
-		}
+		// If object is in the inventory, transfer it to the room object
 		if (inventory.contains(object)) {
 			room.addObject(object);
 			inventory.remove(object);
@@ -263,6 +278,11 @@ public class Adventure extends ConsoleProgram {
 	private void doQuit() {
 		System.exit(0);
 	}
+
+
+	/*
+	 * STANDALONE MESSAGES
+	 */
 
 	private void displayHelp() {
 		println("Somewhere nearby is Colossal Cave, where others have found fortunes in");
@@ -312,6 +332,8 @@ public class Adventure extends ConsoleProgram {
 	private String[] input;
 
 	private int currentroomnumber;
+
+	private ArrayList<String> motion;
 
 	private AdvRoom room;
 
