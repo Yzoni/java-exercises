@@ -287,6 +287,7 @@ public class Adventure extends ConsoleProgram {
 		setCurrentRoomObject();
 	}
 
+	// Return true if a room requires a key
 	private Boolean checkKeyRequired(AdvMotionTableEntry motionentry) {
 		// If nextroom does not require a key
 		if (motionentry.getKeyName() == null) return false;
@@ -294,6 +295,7 @@ public class Adventure extends ConsoleProgram {
 		return true;
 	}
 
+	// Return true if object is in the inventory
 	private Boolean checkItemInInventory(String object) {
 		for (int j = 0; j < inventory.size(); j++) {
 			AdvObject invobject = inventory.get(j);
