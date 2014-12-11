@@ -1,5 +1,6 @@
 /*
  * File: AdvObject.java
+ * Name: Y. de Boer 10786015
  * --------------------
  * This file defines a class that models an object in the
  * Adventure game.
@@ -18,8 +19,6 @@ import java.io.*;
  * <li>The room number in which the object initially lives
  * </ul>
  *
- * The external format of the objects file is described in the
- * assignment handout.
  */
 public class AdvObject extends Adventure {
 

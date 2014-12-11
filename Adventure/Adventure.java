@@ -1,6 +1,6 @@
 /*
  * File: Adventure.java
- * Names: Y. de Boer 10786015
+ * Name: Y. de Boer 10786015
  * -------------------------------------------------------
  * This program plays the Adventure game from Assignment #6.
  */
@@ -13,8 +13,6 @@ import java.util.*;
 
 /**
  * This class is the main program class for the Adventure game.
- * In the final version, <code>Adventure</code> should extend
- * <code>ConsoleProgram</code> directly.
  */
 
 public class Adventure extends ConsoleProgram {
@@ -121,6 +119,7 @@ public class Adventure extends ConsoleProgram {
 		try {
 			while (true) {
 				String line = synonymsreader.readLine();
+				// Keep reading lines untill end of file
 				if(line == null) break;
 				String[] splitline = line.split("=");
 				synonyms.put(splitline[0], splitline[1]);
@@ -167,6 +166,7 @@ public class Adventure extends ConsoleProgram {
 			displayDescription();
 		}
 		displayObjects();
+		room.setVisited(true);
 		String[] input = getInput();
 		// Check if input has a synonym if so, make input the synonym
 		if (tiny == false) {
@@ -175,7 +175,6 @@ public class Adventure extends ConsoleProgram {
 			}
 		}
 		doInput(input);
-			room.setVisited(true);
 	}
 
 	// Get input and return input command with arguments as an array
@@ -331,6 +330,7 @@ public class Adventure extends ConsoleProgram {
 		}
 	}
 
+	// Iterate trough arraylist of objects untill object is found by name
 	private AdvObject getObjectByName(String objectname) {
 		for (int i = 0; i < objectslist.size(); i++) {
 			AdvObject object = objectslist.get(i);
@@ -378,7 +378,7 @@ public class Adventure extends ConsoleProgram {
 
 	private void displayDescription() {
 		String[] description = room.getDescription();
-		for(int i = 0; i < description.length; i++){
+		for(int i = 0; i < description.length; i++) {
 			println(description[i]);
 		}
 	}
@@ -387,17 +387,24 @@ public class Adventure extends ConsoleProgram {
 		if (room.getObjectCount() > 0) {
 			println("Objects laying around: ");
 		}
-		for(int i = 0; i < room.getObjectCount(); i++){
+		// Iterate trough room objects and print every item on a new line
+		for (int i = 0; i < room.getObjectCount(); i++) {
 				AdvObject thisobject = room.getObject(i);
 				print(" - " + thisobject.getDescription());
 				println("");
 		}		
 	}
 
+	
 	private void displayInventory() {
 		println("Your inventory: ");
-		for(int i = 0; i < inventory.size(); i++){
-			println(" - " + inventory.get(i).getDescription());
+		if (inventory.size() == 0) {
+			println(" - Inventory is empty");
+		} else {
+			// Iterate trough inventory and print every item on a new line
+			for (int i = 0; i < inventory.size(); i++) {
+				println(" - " + inventory.get(i).getDescription());
+			}
 		}
 	}
 
@@ -407,6 +414,7 @@ public class Adventure extends ConsoleProgram {
 	// Arralist with valid direction commands
 	private ArrayList<String> motion;
 
+	// Current room object
 	private AdvRoom room;
 
 	private Boolean tiny = false;

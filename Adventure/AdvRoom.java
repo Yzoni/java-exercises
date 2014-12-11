@@ -1,5 +1,6 @@
 /*
  * File: AdvRoom.java
+ * Name: Y. de Boer 10786015
  * ------------------
  * This file defines a class that models a single room in the
  * Adventure game.
@@ -22,8 +23,6 @@ import java.util.*;
  * <li>A motion table specifying the exits and where they lead
  * </ul>
  *
- * The external format of the room file is described in the
- * assignment handout.
  */
 public class AdvRoom extends Adventure {
 
@@ -224,16 +223,10 @@ public class AdvRoom extends Adventure {
 	}
 
 	private int currentroom;
-
 	private String roomname;
-
 	private Boolean roomflag;
-
 	private ArrayList<AdvMotionTableEntry> motiontablearrlist = new ArrayList<AdvMotionTableEntry>();
-
 	private ArrayList<AdvObject> objectlist = new ArrayList<AdvObject>();
-
 	private AdvMotionTableEntry[] motiontable;
-
 	private String[] descriptionlist;
 }
