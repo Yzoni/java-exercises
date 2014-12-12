@@ -46,6 +46,7 @@ public class Adventure extends ConsoleProgram {
 		initInventory();
 	}
 
+	// Open specified game files based on user input
 	private void getAdventure() {
 		println("Adventure name choices; Crowther, Small or Tiny");
 		String adventurename = readLine("Enter adventure name (case sensitive): " );
@@ -96,7 +97,6 @@ public class Adventure extends ConsoleProgram {
 			AdvObject object = AdvObject.readObject(objectsreader);
 			if(object == null) break;
 			objectslist.add(object);
-
 			// Get objects in room and add the objects from the objects file to them
 			int initialobjectlocation = object.getInitialLocation();
 			for (int i = 0; i < roomslist.size(); i++) {
@@ -250,12 +250,14 @@ public class Adventure extends ConsoleProgram {
 							currentroomnumber = motionentry.getDestinationRoom();
 							break;
 						} else {
+							// Execute the second forced when key is not in inventory
 							motionentry = motiontable[i + 1];
 							displayName();
 							displayDescription();
 							currentroomnumber = motionentry.getDestinationRoom();
 							break;							
 						}
+					// In case no key is required for the forced room	
 					} else {
 						displayName();
 						displayDescription();
@@ -265,13 +267,13 @@ public class Adventure extends ConsoleProgram {
 				} else {
 					Boolean keyrequired = checkKeyRequired(motionentry);
 					if (keyrequired == true) {
-					String neededkeyname = motionentry.getKeyName();
-					// Check if key is in inventory
-					if (checkItemInInventory(neededkeyname) == true) {
+						String neededkeyname = motionentry.getKeyName();
+						// Check if key is in inventory
+						if (checkItemInInventory(neededkeyname) == true) {
 						currentroomnumber = motionentry.getDestinationRoom();
-					} else {
+						} else {
 						println("Key object not found!");
-					}
+						}
 					// No key required		
 					} else {
 						currentroomnumber = motionentry.getDestinationRoom();
@@ -395,7 +397,6 @@ public class Adventure extends ConsoleProgram {
 		}		
 	}
 
-	
 	private void displayInventory() {
 		println("Your inventory: ");
 		if (inventory.size() == 0) {
